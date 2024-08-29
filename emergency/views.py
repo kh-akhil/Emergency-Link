@@ -1,17 +1,19 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-import mysql.connector
+import mysql.connector, json, os
 from geopy.geocoders import ArcGIS
-import json
 import openrouteservice as ors
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Create your views here.
 def connectDB():
     return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="akhil007",
-        database="V2V"
+        host=os.getenv("DB_HOST"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        database=os.getenv("DB_NAME")
     )
 
 @csrf_exempt

@@ -1,26 +1,37 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import mysql.connector
-import json
+import json, os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Create your views here.
 def connectDB():
     return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="akhil007",
-        database="V2V"
+        host=os.getenv("DB_HOST"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        database=os.getenv("DB_NAME")
     )
     
 @csrf_exempt
 def list_locations(request):
-    connection = connectDB()
-    cursor = connection.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM Vehicles")
-    result = cursor.fetchall()
-    cursor.close()
-    connection.close()
-    return JsonResponse({'message': result}, safe=False)
+    if request.method == 'GET':
+        try:
+            connection = connectDB()
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM Vehicles")
+            result = cursor.fetchall()
+            return JsonResponse({'success': True, 'message': result}, safe=False)
+        except:
+            return JsonResponse({'success': False, 'message': 'An Error has occured'}, safe=False)
+        finally:
+            cursor.close()
+            connection.close()
+    else:
+        return JsonResponse({'success': False, 'message': 'Invalid method'}, safe=False)
+
 
 @csrf_exempt
 def register(request):

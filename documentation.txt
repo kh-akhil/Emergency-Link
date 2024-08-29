@@ -1,0 +1,110 @@
+USER API
+
+1. List all users registered on the database
+    Method: GET
+    http://127.0.0.1:8000/user/list/
+    No parameters needed.
+     Example usage:
+        {
+            "success": true,
+            "message": [
+                {
+                    "vehicle_id": 1,
+                    "owner_name": "Akhil",
+                    "email": "akhil@gmail.com",
+                    "password": "akhil007"
+                },
+                {
+                    "vehicle_id": 7,
+                    "owner_name": "Nisha",
+                    "email": "nishamishra@gmail.com",
+                    "password": "nishamishra"
+                },
+                {
+                    "vehicle_id": 8,
+                    "owner_name": "Nisha2",
+                    "email": "nishamishra2@gmail.com",
+                    "password": "nishamishra2"
+                }
+            ]
+        }
+
+2. Register a new user
+    Method: POST
+    http://127.0.0.1:8000/user/register/
+    Params:
+        Body: JSON:
+            {
+                "name": String,
+                "email": String,
+                "password": String
+            }
+
+    Example usage:
+        {
+            "name": "Nisha",
+            "email": "nishamishra@gmail.com",
+            "password": "nishamishra"
+        }
+
+    Output:
+        {
+            'success': True, 
+            'message': 'User Added'
+        }
+    
+    Possible Errors:
+        i. Insufficient Data
+        ii. Email already registered
+        iii. Invalid Method
+
+3. Login with credentials
+    Method: POST
+    http://127.0.0.1:8000/user/login/
+    Params:
+        Body: JSON
+            {
+                "email": String,
+                "password": String
+            }
+    
+    Example Usage:
+        {
+            "email": "nishamishra3@gmail.com",
+            "password": "nishamishra2"
+        }
+    Output:
+        {
+            "success": true,
+            "message": "User logged In"
+        }
+    Possible Errors:
+        i. Insufficient Data
+        ii. User does not exist
+        iii. Invalid credentials
+        iv. Invalid Method
+
+3. Add Location to database
+    Method: POST
+    http://127.0.0.1:8000/user/add/
+    Params:
+        Body: JSON
+            {
+                "id": Number,
+                "lat": Number,
+                "lng": Number
+            }
+    Example usage:
+    {
+        "id": 1,
+        "lat": 11.11,
+        "lng": 22.22
+    }
+    Output: 
+    {'success': True, 'message': 'New Location Added'}
+
+    Possible Error:
+        i. Insufficient Data
+        ii. Invalid method
+
+EMERGENCY API

@@ -1,0 +1,6 @@
+django
+openrouteservice
+geocode
+geopy
+mysql-connector-python
+python-dotenv
