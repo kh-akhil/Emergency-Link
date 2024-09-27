@@ -29,8 +29,8 @@ def locations(request):
             )
             result = cursor.fetchall()
             return JsonResponse({'success': True, 'locations': result})
-        except:
-            return JsonResponse({'success': False, 'message': 'An error occured'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
         finally:
             cursor.close()
             connection.close()
@@ -62,35 +62,40 @@ def alert(request):
             ilat = data.get('latitude')
             ilng = data.get('longitude')
             destination = destination_location(dest)
-            current = [ilng, ilat]
+            current = [float(ilng), float(ilat)]
             connection = connectDB()
             cursor = connection.cursor(dictionary=True)
             cursor.execute(
-                "SELECT vehicle_id, latitude, longitude"
+                "SELECT vehicle_id, latitude, longitude "
                 "FROM VehicleLocations "
-                "WHERE timestamp >= NOW() - INTERVAL 5 MINUTE"
+                "WHERE timestamp >= NOW() - INTERVAL 20 MINUTE"
             )
             route = finalroute(current, destination)
             result = cursor.fetchall()
-            print("result :"  , result)
+            vehicles = []
             if result:
-                vehicles = []
                 for coord in route:
                     for x in result:
-                        pos = [x['longitude'], x['latitude']]  
-                        if pos == coord:
+                        pos = [float(x['longitude']), float(x['latitude'])]  
+                        if proximity(pos, coord):
                             vehicles.append(x['vehicle_id'])
+                
+                if vehicles:
+                    vehicle_str = ', '.join(map(str, vehicles))
+                    return JsonResponse({'success': True, 'message': f"Vehicles found on route are {vehicle_str}"})
+                else:
+                    return JsonResponse({'success': False, 'message': "No vehicles found at the route"})
             else:
-                return JsonResponse({'success': True, 'message':'No vehicles found in route'})
-            return JsonResponse({'success': True, 'Vehicles found': vehicles})              
-        except:
-            return JsonResponse({'success': False, 'message':'error'})
+                return JsonResponse({'success': True, 'message':'No vehicles active at the moment'})              
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
         finally:
             cursor.close()
             connection.close()
     else:
         return JsonResponse({'success': False, 'message':'Invalid method'})
             
-            
+def proximity(coord1, coord2, threshold=0.0001):
+    return abs(coord1[0] - coord2[0]) < threshold and abs(coord1[1] - coord2[1]) < threshold        
             
             

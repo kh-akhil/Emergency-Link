@@ -3,6 +3,7 @@ from django.views.decorators.csrf import csrf_exempt
 import mysql.connector
 import json, os
 from dotenv import load_dotenv
+import datetime, jwt, uuid
 
 load_dotenv()
 
@@ -51,10 +52,13 @@ def register(request):
                 return JsonResponse({'success': False, 'message': 'Email already exists'})
             else:
                cursor.execute("INSERT INTO Vehicles (owner_name, email, password) VALUES (%s, %s, %s)", (name, email, password))
+               user_id = cursor.lastrowid
+               secret_key = str(uuid.uuid4())
+               cursor.execute("INSERT INTO Clients (vehicle_id, client_id) VALUES (%s, %s)", (user_id, secret_key))
                connection.commit()
                return JsonResponse({'success': True, 'message': 'User Added'})
-        except:
-            return JsonResponse({'success': False, 'message': 'An error occured'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': 'An error occured', 'Exception': str(e)})
         finally:
             cursor.close()
             connection.close()
@@ -77,7 +81,13 @@ def login(request):
             if result == None :
                 return JsonResponse({'success': False, 'message': 'User does not exist'})
             if result['password'] == password:
-                return JsonResponse({'success': True, 'message': 'User logged In'})
+                secret = os.getenv("JWT_SECRET_KEY")
+                TOKEN_EXPIRATION_TIME = 3600 
+                payload = {
+                    'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=TOKEN_EXPIRATION_TIME)
+                }
+                token = jwt.encode(payload, secret, algorithm='HS256')
+                return JsonResponse({'success': True, 'message': 'User logged In', 'token' : token})
             else:
                 return JsonResponse({'success': False, 'message': 'Invalid Credentials'})
         except:
