@@ -87,7 +87,7 @@ def login(request):
                     'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=TOKEN_EXPIRATION_TIME)
                 }
                 token = jwt.encode(payload, secret, algorithm='HS256')
-                return JsonResponse({'success': True, 'message': 'User logged In', 'token' : token})
+                return JsonResponse({'success': True, 'message': 'User logged In', 'token' : token, 'id': result['vehicle_id']})
             else:
                 return JsonResponse({'success': False, 'message': 'Invalid Credentials'})
         except:

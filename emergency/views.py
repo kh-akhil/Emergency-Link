@@ -4,6 +4,9 @@ import mysql.connector, json, os
 from geopy.geocoders import ArcGIS
 import openrouteservice as ors
 from dotenv import load_dotenv
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+from .utils import send_alert_to_vehicle
 
 load_dotenv()
 
@@ -71,6 +74,7 @@ def alert(request):
                 "WHERE timestamp >= NOW() - INTERVAL 20 MINUTE"
             )
             route = finalroute(current, destination)
+            #print(route)
             result = cursor.fetchall()
             vehicles = []
             if result:
@@ -79,9 +83,13 @@ def alert(request):
                         pos = [float(x['longitude']), float(x['latitude'])]  
                         if proximity(pos, coord):
                             vehicles.append(x['vehicle_id'])
-                
+    
                 if vehicles:
                     vehicle_str = ', '.join(map(str, vehicles))
+                    #cursor.execute("SELECT client_id FROM CLIENTS WHERE vehicle_id IN (%s)", vehicle_str)
+                    #client_ids = cursor.fetchall()
+                    for vehicle in vehicles:
+                        send_alert_to_vehicle(vehicle, "Ambulance Incoming")
                     return JsonResponse({'success': True, 'message': f"Vehicles found on route are {vehicle_str}"})
                 else:
                     return JsonResponse({'success': False, 'message': "No vehicles found at the route"})
@@ -96,6 +104,17 @@ def alert(request):
         return JsonResponse({'success': False, 'message':'Invalid method'})
             
 def proximity(coord1, coord2, threshold=0.0001):
-    return abs(coord1[0] - coord2[0]) < threshold and abs(coord1[1] - coord2[1]) < threshold        
+    return abs(coord1[0] - coord2[0]) < threshold and abs(coord1[1] - coord2[1]) < threshold   
+
+def send_alert_to_vehicles(vehicle_ids, message):
+    channel_layer = get_channel_layer()
+    for vehicle_id in vehicle_ids:
+        async_to_sync(channel_layer.group_send)(
+            f'vehicle_{vehicle_id}',  # Group name for each vehicle
+            {
+                'type': 'send_alert',
+                'message': message
+            }
+        )     
             
             
