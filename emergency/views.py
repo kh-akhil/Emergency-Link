@@ -74,7 +74,7 @@ def alert(request):
                 "WHERE timestamp >= NOW() - INTERVAL 20 MINUTE"
             )
             route = finalroute(current, destination)
-            #print(route)
+            print(route)
             result = cursor.fetchall()
             vehicles = []
             if result:

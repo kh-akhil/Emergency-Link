@@ -1,1 +1,1 @@
-SELECT * FROM Vehicles
+SHOW CREATE TABLE Clients;

@@ -30,7 +30,7 @@ class AlertConsumer(AsyncWebsocketConsumer):
             'message' : 'Hello world'
         }
         await self.accept()
-        await self.send(text_data=json.dumps(message))
+        #await self.send(text_data=json.dumps(message))
     
     async def disconnect(self, close_code):
         if self.vehicle_id:
