@@ -42,7 +42,9 @@ def register(request):
             email = data.get('email')
             password = data.get('password')
             name = data.get('name')
-            if not all([email, password, name]):
+            vehicle_number = data.get('vehicle_number')
+            vehicle_type = data.get('vehicle_type')
+            if not all([email, password, name, vehicle_number, vehicle_type]):
                 return JsonResponse({'success': False, 'message':'Insufficient data'})
             connection = connectDB()
             cursor = connection.cursor(dictionary=True)
@@ -51,7 +53,7 @@ def register(request):
             if len(result) > 0:
                 return JsonResponse({'success': False, 'message': 'Email already exists'})
             else:
-               cursor.execute("INSERT INTO Vehicles (owner_name, email, password) VALUES (%s, %s, %s)", (name, email, password))
+               cursor.execute("INSERT INTO Vehicles (owner_name, email, password, VehicleNo, vehicle_type) VALUES (%s, %s, %s, %s, %s)", (name, email, password, vehicle_number, vehicle_type))
                user_id = cursor.lastrowid
                secret_key = str(uuid.uuid4())
                cursor.execute("INSERT INTO Clients (vehicle_id, client_id) VALUES (%s, %s)", (user_id, secret_key))

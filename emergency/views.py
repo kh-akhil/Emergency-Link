@@ -7,8 +7,19 @@ from dotenv import load_dotenv
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from .utils import send_alert_to_vehicle
+import paho.mqtt.client as mqtt
+
+MQTT_BROKER = "localhost" 
+MQTT_PORT = 1883
+MQTT_TOPIC = "traffic/light/control"
 
 load_dotenv()
+
+def send_msg_mqtt(message):
+    client = mqtt.Client()
+    client.connect(MQTT_BROKER, MQTT_PORT)
+    client.publish(MQTT_TOPIC, message)
+    client.disconnect()
 
 # Create your views here.
 def connectDB():
@@ -54,7 +65,9 @@ def finalroute(s, e):
     route = client.directions(coordinates = coords,
                              profile = 'driving-car',
                              format = 'geojson')
-    return route['features'][0]['geometry']['coordinates'] 
+    time = route['features'][0]['properties']['segments'][0]['duration']
+    directions = route['features'][0]['geometry']['coordinates']
+    return  time, directions
 
 @csrf_exempt
 def alert(request):
@@ -73,7 +86,7 @@ def alert(request):
                 "FROM VehicleLocations "
                 "WHERE timestamp >= NOW() - INTERVAL 20 MINUTE"
             )
-            route = finalroute(current, destination)
+            time, route = finalroute(current, destination)
             print(route)
             result = cursor.fetchall()
             vehicles = []
@@ -88,6 +101,7 @@ def alert(request):
                     vehicle_str = ', '.join(map(str, vehicles))
                     #cursor.execute("SELECT client_id FROM CLIENTS WHERE vehicle_id IN (%s)", vehicle_str)
                     #client_ids = cursor.fetchall()
+                    send_msg_mqtt(f'AMBULANCE INCOMING IN {time} seconds')
                     for vehicle in vehicles:
                         send_alert_to_vehicle(vehicle, "Ambulance Incoming")
                     return JsonResponse({'success': True, 'message': f"Vehicles found on route are {vehicle_str}"})
