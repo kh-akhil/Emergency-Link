@@ -48,6 +48,7 @@ def register(request):
             vehicle_number = data.get('vehicle_number')
             vehicle_type = data.get('vehicle_type')
             if not all([email, password, name, vehicle_number, vehicle_type]):
+                print(f'email: {email}, password: {password}, name: {name}, vehicle_number: {vehicle_number}, vehicle_type: {vehicle_type}')
                 return JsonResponse({'success': False, 'message':'Insufficient data'})
             connection = connectDB()
             cursor = connection.cursor(dictionary=True)
