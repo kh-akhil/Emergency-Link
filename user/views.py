@@ -4,6 +4,7 @@ import mysql.connector
 import json, os
 from dotenv import load_dotenv
 import datetime, jwt, uuid
+from geopy.distance import geodesic
 
 load_dotenv()
 
@@ -27,9 +28,9 @@ def list_locations(request):
             return JsonResponse({'success': True, 'message': result}, safe=False)
         except:
             return JsonResponse({'success': False, 'message': 'An Error has occured'}, safe=False)
-        finally:
-            cursor.close()
-            connection.close()
+        #finally:
+            #cursor.close()
+            #connection.close()
     else:
         return JsonResponse({'success': False, 'message': 'Invalid method'}, safe=False)
 
@@ -89,7 +90,7 @@ def login(request):
                     'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=TOKEN_EXPIRATION_TIME)
                 }
                 token = jwt.encode(payload, secret, algorithm='HS256')
-                return JsonResponse({'success': True, 'message': 'User logged In', 'token' : token, 'id': result['vehicle_id']})
+                return JsonResponse({'success': True, 'message': 'User logged In', 'token' : token, 'id': result['vehicle_id'], 'type': result['vehicle_type']})
             else:
                 return JsonResponse({'success': False, 'message': 'Invalid Credentials'})
         except:
@@ -123,4 +124,38 @@ def insert_location(request):
     else:
         return JsonResponse({'success': False, 'message': 'Invalid METHOD'})
         
-        
+@csrf_exempt
+def report_accidents(request):
+    connection = None
+    cursor = None
+    if request.method=='POST':
+        try:
+            data = json.loads(request.body)
+            lat = data.get('lat')
+            lng = data.get('lng')
+            desc = data.get('description')
+            severity = data.get('severity')
+            reporter_name = data.get('reporter_name')
+            reporter_contact = data.get('reporter_contact')
+            if not all([lat, lng, desc, severity, reporter_name, reporter_contact]):
+                return JsonResponse({'success': False, 'message':'Insufficient data'})
+            connection = connectDB()
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM bengaluru_hospitals")
+            hospitals = cursor.fetchall()
+            accident_location = (lat, lng)
+            nearest_hospital = min(
+                hospitals,
+                key=lambda hospital: geodesic(accident_location, (hospital["latitude"], hospital["longitude"])).km
+            )
+            return JsonResponse({'success': True, 'message': f'The nearest hospital is {nearest_hospital['name']}'}, safe=False)
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': f'The following error occured: {str(e)}'})
+        finally:
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
+    else:   
+        return JsonResponse({'success': False, 'message': 'Invalid METHOD'})
+            
