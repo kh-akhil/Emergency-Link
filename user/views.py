@@ -64,7 +64,7 @@ def register(request):
                connection.commit()
                return JsonResponse({'success': True, 'message': 'User Added'})
         except Exception as e:
-            return JsonResponse({'success': False, 'message': 'An error occured', 'Exception': str(e)})
+            return JsonResponse({'success': False, 'message': f'An error occured: {str(e)}', 'Exception': str(e)})
         finally:
             if cursor:
                 cursor.close()
