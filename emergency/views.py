@@ -32,6 +32,8 @@ def connectDB():
 
 @csrf_exempt
 def locations(request):
+    connection = None
+    cursor = None
     if request.method == 'GET':
         try:
             connection = connectDB()
@@ -46,8 +48,10 @@ def locations(request):
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
         finally:
-            cursor.close()
-            connection.close()
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
     else:
         return JsonResponse({'success': False, 'message': 'Invalid METHOD'})
 
@@ -71,6 +75,8 @@ def finalroute(s, e):
 
 @csrf_exempt
 def alert(request):
+    connection = None
+    cursor = None
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -112,8 +118,10 @@ def alert(request):
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)})
         finally:
-            cursor.close()
-            connection.close()
+            if cursor: 
+                cursor.close()
+            if connection:
+                connection.close()
     else:
         return JsonResponse({'success': False, 'message':'Invalid method'})
             

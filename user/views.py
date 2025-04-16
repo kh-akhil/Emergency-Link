@@ -37,6 +37,8 @@ def list_locations(request):
 
 @csrf_exempt
 def register(request):
+    connection = None
+    cursor = None
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -63,13 +65,17 @@ def register(request):
         except Exception as e:
             return JsonResponse({'success': False, 'message': 'An error occured', 'Exception': str(e)})
         finally:
-            cursor.close()
-            connection.close()
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
     else:
         return JsonResponse({'success': False, 'message': 'Invalid METHOD'})
             
 @csrf_exempt
 def login(request):
+    connection = None
+    cursor = None
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -96,8 +102,10 @@ def login(request):
         except:
             return JsonResponse({'success': False, 'message': 'An error occured'})
         finally:
-            cursor.close()
-            connection.close()
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
     else:
         return JsonResponse({'success': False, 'message': 'Invalid METHOD'})
 
