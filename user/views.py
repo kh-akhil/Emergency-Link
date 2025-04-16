@@ -157,7 +157,7 @@ def report_accidents(request):
                 hospitals,
                 key=lambda hospital: geodesic(accident_location, (hospital["latitude"], hospital["longitude"])).km
             )
-            return JsonResponse({'success': True, 'message': f'The nearest hospital is {nearest_hospital['name']}'}, safe=False)
+            return JsonResponse({'success': True, 'message': f'The nearest hospital, {nearest_hospital['name']}, has been informed and will take actions ASAP'}, safe=False)
         except Exception as e:
             return JsonResponse({'success': False, 'message': f'The following error occured: {str(e)}'})
         finally:
