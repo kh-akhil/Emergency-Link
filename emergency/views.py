@@ -124,6 +124,25 @@ def alert(request):
                 connection.close()
     else:
         return JsonResponse({'success': False, 'message':'Invalid method'})
+    
+@csrf_exempt
+def test(request):
+    if request.method == 'POST':
+        try:
+            body = json.loads(request.body)
+            vehicle_ids = body.get('vehicle_ids')
+            message = body.get('message')
+
+            if not vehicle_ids or not message:
+                return JsonResponse({'error': 'vehicle_ids and message are required'}, status=400)
+
+            send_alert_to_vehicles(vehicle_ids, message)
+            return JsonResponse({'success': True, 'message': 'Alert sent'})
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Invalid request'}, status=405)
             
 def proximity(coord1, coord2, threshold=0.0001):
     return abs(coord1[0] - coord2[0]) < threshold and abs(coord1[1] - coord2[1]) < threshold   

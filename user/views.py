@@ -140,7 +140,6 @@ def report_accidents(request):
     if request.method=='POST':
         try:
             data = json.loads(request.body)
-            print("Received data:", data)
             lat = data.get('lat')
             lng = data.get('lng')
             desc = data.get('description')
