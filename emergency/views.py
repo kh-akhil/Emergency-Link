@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import mysql.connector, json, os
-from geopy.geocoders import ArcGIS
+from geopy.geocoders import ArcGIS, Nominatim
 import openrouteservice as ors
 from dotenv import load_dotenv
 from channels.layers import get_channel_layer
@@ -12,6 +12,7 @@ import paho.mqtt.client as mqtt
 MQTT_BROKER = "localhost" 
 MQTT_PORT = 1883
 MQTT_TOPIC = "traffic/light/control"
+geolocator = Nominatim(user_agent="geoapi")
 
 load_dotenv()
 
@@ -83,6 +84,7 @@ def alert(request):
             dest = data.get('destination')
             ilat = data.get('latitude')
             ilng = data.get('longitude')
+            ambulance_location = geolocator.reverse((float(ilat), float(ilng)))
             destination = destination_location(dest)
             current = [float(ilng), float(ilat)]
             connection = connectDB()
@@ -109,7 +111,7 @@ def alert(request):
                     #client_ids = cursor.fetchall()
                     send_msg_mqtt(f'AMBULANCE INCOMING IN {time} seconds')
                     for vehicle in vehicles:
-                        send_alert_to_vehicle(vehicle, "Ambulance Incoming")
+                        send_alert_to_vehicle(vehicle, f'Ambulance Incoming from {ambulance_location} to {dest}')
                     return JsonResponse({'success': True, 'message': f"Vehicles found on route are {vehicle_str}"})
                 else:
                     return JsonResponse({'success': False, 'message': "No vehicles found at the route"})
