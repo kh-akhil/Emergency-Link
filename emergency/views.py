@@ -110,7 +110,8 @@ def alert(request):
                         pos = [float(x['longitude']), float(x['latitude'])]  
                         if proximity(pos, coord):
                             vehicles.append(x['vehicle_id'])
-    
+            
+                print("Vehicles: ", vehicles)
                 if vehicles:
                     unique = []
                     for v in vehicles:
