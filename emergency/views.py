@@ -124,6 +124,7 @@ def alert(request):
                     send_msg_mqtt(f'AMBULANCE INCOMING IN {time} seconds')
                     for vehicle in vehicles:
                         try:
+                            print(f"Sending alert to vehicle {vehicle}")
                             send_alert_to_vehicle(vehicle, f'Ambulance Incomings')
                         except  Exception as ve:
                             print(f"Error sending alert to vehicle {vehicle}: {ve}")
