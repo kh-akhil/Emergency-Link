@@ -118,6 +118,7 @@ def alert(request):
                         if v not in unique:
                             unique.append(v)
                     vehicle_str = ', '.join(map(str, unique))
+                    print("Vehicles in route: ",vehicle_str)
                     #cursor.execute("SELECT client_id FROM CLIENTS WHERE vehicle_id IN (%s)", vehicle_str)
                     #client_ids = cursor.fetchall()
                     send_msg_mqtt(f'AMBULANCE INCOMING IN {time} seconds')
