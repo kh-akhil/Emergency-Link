@@ -122,7 +122,7 @@ def alert(request):
                     #cursor.execute("SELECT client_id FROM CLIENTS WHERE vehicle_id IN (%s)", vehicle_str)
                     #client_ids = cursor.fetchall()
                     send_msg_mqtt(f'AMBULANCE INCOMING IN {time} seconds')
-                    for vehicle in vehicles:
+                    for vehicle in unique:
                         try:
                             print(f"Sending alert to vehicle {vehicle}")
                             send_alert_to_vehicle(vehicle, f'Ambulance Incomings')
