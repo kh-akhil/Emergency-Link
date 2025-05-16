@@ -9,7 +9,7 @@ from asgiref.sync import async_to_sync
 from .utils import send_alert_to_vehicle
 import paho.mqtt.client as mqtt
 
-MQTT_BROKER = "localhost" 
+MQTT_BROKER = "3.220.33.61" 
 MQTT_PORT = 1883
 MQTT_TOPIC = "traffic/light/control"
 geolocator = Nominatim(user_agent="geoapi")
