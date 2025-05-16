@@ -5,6 +5,8 @@ import json, os
 from dotenv import load_dotenv
 import datetime, jwt, uuid
 from geopy.distance import geodesic
+from django.test import RequestFactory
+from emergency.views import alert
 
 load_dotenv()
 
@@ -157,9 +159,28 @@ def report_accidents(request):
                 hospitals,
                 key=lambda hospital: geodesic(accident_location, (hospital["latitude"], hospital["longitude"])).km
             )
-            return JsonResponse({'success': True, 'message': f'The nearest hospital, {nearest_hospital['name']}, has been informed and will take actions ASAP'}, safe=False)
+            factory = RequestFactory()
+            mock_request = factory.post(
+                '/emerg/alert/',
+                data=json.dumps({
+                    'latitude': float(nearest_hospital['latitude']),     
+                    'longitude': float(nearest_hospital['longitude']),
+                    'destination': {
+                        'lat': float(lat),                               
+                        'lng': float(lng)
+                    }
+                }),
+                content_type='application/json'
+            )
+            alert_response = alert(mock_request)  # Call the alert view
+            alert_data = json.loads(alert_response.content)
+            return JsonResponse({
+                'success': True,
+                'message': f"The nearest hospital, {nearest_hospital['name']}, has been informed and will take actions ASAP",
+                'alert_response': alert_data
+            })
         except Exception as e:
-            return JsonResponse({'success': False, 'message': f'The following error occured: {str(e)}'})
+            return JsonResponse({'success': False, 'message': f"The following error occured: {str(e)}"})
         finally:
             if cursor:
                 cursor.close()

@@ -85,18 +85,21 @@ def alert(request):
             ilat = data.get('latitude')
             ilng = data.get('longitude')
             ambulance_location = geolocator.reverse((float(ilat), float(ilng)))
-            destination = destination_location(dest)
+            if isinstance(dest, dict):
+                destination = [float(dest['lng']), float(dest['lat'])]
+            else:
+                destination = destination_location(dest)
             current = [float(ilng), float(ilat)]
             connection = connectDB()
-            cursor = connection.cursor(dictionary=True)
+            cursor = connection.cursor(dictionary=True, buffered=True)
             cursor.execute(
                 "SELECT vehicle_id, latitude, longitude "
                 "FROM VehicleLocations "
-                "WHERE timestamp >= NOW() - INTERVAL 20 MINUTE"
+                "WHERE timestamp >= NOW() - INTERVAL 10 MINUTE"
             )
+            result = cursor.fetchall()
             time, route = finalroute(current, destination)
             print(route)
-            result = cursor.fetchall()
             vehicles = []
             if result:
                 for coord in route:
@@ -106,7 +109,11 @@ def alert(request):
                             vehicles.append(x['vehicle_id'])
     
                 if vehicles:
-                    vehicle_str = ', '.join(map(str, vehicles))
+                    unique = []
+                    for v in vehicles:
+                        if v not in unique:
+                            unique.append(v)
+                    vehicle_str = ', '.join(map(str, unique))
                     #cursor.execute("SELECT client_id FROM CLIENTS WHERE vehicle_id IN (%s)", vehicle_str)
                     #client_ids = cursor.fetchall()
                     send_msg_mqtt(f'AMBULANCE INCOMING IN {time} seconds')
