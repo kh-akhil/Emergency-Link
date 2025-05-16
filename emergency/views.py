@@ -9,18 +9,35 @@ from asgiref.sync import async_to_sync
 from .utils import send_alert_to_vehicle
 import paho.mqtt.client as mqtt
 
-MQTT_BROKER = "3.220.33.61" 
-MQTT_PORT = 1883
-MQTT_TOPIC = "traffic/light/control"
 geolocator = Nominatim(user_agent="geoapi")
 
 load_dotenv()
 
+MQTT_BROKER = "3.220.33.61"
+MQTT_PORT = 1883
+MQTT_TOPIC = "traffic/light/control"
+client = mqtt.Client()
+connected = False
+
+def connect_mqtt():
+    global connected
+    if not connected:
+        try:
+            client.connect(MQTT_BROKER, MQTT_PORT)
+            client.loop_start()
+            connected = True
+            print("MQTT connected")
+        except Exception as e:
+            print(f"MQTT connection failed: {e}")
+
 def send_msg_mqtt(message):
-    client = mqtt.Client()
-    client.connect(MQTT_BROKER, MQTT_PORT)
-    client.publish(MQTT_TOPIC, message)
-    client.disconnect()
+    if not connected:
+        connect_mqtt()
+    try:
+        client.publish(MQTT_TOPIC, message)
+        print(f"Published MQTT message: {message}")
+    except Exception as e:
+        print(f"MQTT publish failed: {e}")
 
 # Create your views here.
 def connectDB():
