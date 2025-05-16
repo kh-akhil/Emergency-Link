@@ -121,7 +121,7 @@ def alert(request):
                     send_msg_mqtt(f'AMBULANCE INCOMING IN {time} seconds')
                     for vehicle in vehicles:
                         try:
-                            send_alert_to_vehicle(vehicle, f'Ambulance Incoming from {ambulance_location} to {dest}')
+                            send_alert_to_vehicle(vehicle, f'Ambulance Incomings')
                         except  Exception as ve:
                             print(f"Error sending alert to vehicle {vehicle}: {ve}")
                     return JsonResponse({'success': True, 'message': f"Vehicles found on route are {vehicle_str}"})
