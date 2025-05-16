@@ -102,6 +102,7 @@ def alert(request):
             result = cursor.fetchall()
             time, route = finalroute(current, destination)
             print(route)
+            print("Result: ", result)
             vehicles = []
             if result:
                 for coord in route:
