@@ -85,10 +85,12 @@ def alert(request):
             ilat = data.get('latitude')
             ilng = data.get('longitude')
             ambulance_location = geolocator.reverse((float(ilat), float(ilng)))
+            print("Ambulance Location: ", ambulance_location)
             if isinstance(dest, dict):
                 destination = [float(dest['lng']), float(dest['lat'])]
             else:
                 destination = destination_location(dest)
+            print("Destination: ", destination)
             current = [float(ilng), float(ilat)]
             connection = connectDB()
             cursor = connection.cursor(dictionary=True, buffered=True)
@@ -118,7 +120,10 @@ def alert(request):
                     #client_ids = cursor.fetchall()
                     send_msg_mqtt(f'AMBULANCE INCOMING IN {time} seconds')
                     for vehicle in vehicles:
-                        send_alert_to_vehicle(vehicle, f'Ambulance Incoming from {ambulance_location} to {dest}')
+                        try:
+                            send_alert_to_vehicle(vehicle, f'Ambulance Incoming from {ambulance_location} to {dest}')
+                        except  Exception as ve:
+                            print(f"Error sending alert to vehicle {vehicle}: {ve}")
                     return JsonResponse({'success': True, 'message': f"Vehicles found on route are {vehicle_str}"})
                 else:
                     return JsonResponse({'success': False, 'message': "No vehicles found at the route"})
